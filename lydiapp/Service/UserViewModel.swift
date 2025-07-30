@@ -32,47 +32,68 @@ final class UserViewModel {
 
     private(set) var users: [UserEntity] = []
     
-    // Le service utilisé pour charger les utilisateurs (injection possible)
     var service: UserService = .init()
+    
+    private var usersTask: Task<Void, Never>? = nil
     
     private var currentPage: Int = 1
     
     var error: ErrorState? = nil
     
-    /// Charge les utilisateurs aléatoires et met à jour le tableau observable
-    func loadUsers() async {
-        error = nil
-        do {
-            let fetched = try await service.fetchAndSaveUsers(page: 1)
-            self.users = fetched
-        } catch {
-            handleError(error)
+    /// Charge les utilisateurs aléatoires et met à jour le tableau.
+    func loadUsers() {
+        cancelUsersTask()
+        
+        usersTask = Task {
+            error = nil
+            do {
+                let fetched = try await service.fetchAndSaveUsers(page: 1)
+                self.users = fetched
+                self.currentPage = 1
+            } catch {
+                handleError(error)
+            }
         }
     }
     
-    /// Charge la page suivante d’utilisateurs et ajoute au tableau existant
-    func loadMoreUsers() async {
-        error = nil
+    /// Charge la page suivante d’utilisateurs et ajoute au tableau existant.
+    /// L'appel est immédiat et la tâche de chargement est gérée en interne.
+    func loadMoreUsers() {
+        cancelUsersTask()
+        
         let nextPage = currentPage + 1
-        do {
-            let fetched = try await service.fetchAndSaveUsers(page: nextPage)
-            self.users.append(contentsOf: fetched)
-            self.currentPage = nextPage
-        } catch {
-            handleError(error)
+        usersTask = Task {
+            error = nil
+            do {
+                let fetched = try await service.fetchAndSaveUsers(page: nextPage)
+                self.users.append(contentsOf: fetched)
+                self.currentPage = nextPage
+            } catch {
+                handleError(error)
+            }
         }
     }
     
-    /// Recharge la première page d’utilisateurs
-    func reloadUsers() async {
-        error = nil
-        do {
-            let fetched = try await service.fetchAndSaveUsers(page: 1)
-            self.users = fetched
-            self.currentPage = 1
-        } catch {
-            handleError(error)
+    /// Recharge la première page d’utilisateurs.
+    /// L'appel est immédiat et la tâche de chargement est gérée en interne.
+    func reloadUsers() {
+        cancelUsersTask()
+        usersTask = Task {
+            error = nil
+            do {
+                let fetched = try await service.fetchAndSaveUsers(page: 1)
+                self.users = fetched
+                self.currentPage = 1
+            } catch {
+                handleError(error)
+            }
         }
+    }
+    
+    /// Annule la tâche en cours de chargement des utilisateurs si elle existe.
+    func cancelUsersTask() {
+        usersTask?.cancel()
+        usersTask = nil
     }
     
     func handleError(_ error: Error) {
@@ -84,5 +105,14 @@ final class UserViewModel {
         default:
             self.error = .unknown(error)
         }
+    }
+    
+    // Pour tester
+    func sample() {
+        users = UserEntity.samples(in: CoreDataManager.shared.viewContext)
+    }
+    
+    deinit {
+        cancelUsersTask()
     }
 }
