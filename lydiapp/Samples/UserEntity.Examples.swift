@@ -155,3 +155,32 @@ extension UserEntity {
         ]
     }
 }
+
+extension UserEntity {
+    /// Met à jour une entité existante avec les valeurs d’un RandomUser
+    func update(with randomUser: User) {
+        self.firstName = randomUser.name.first
+        self.lastName = randomUser.name.last
+        self.email = randomUser.email
+        self.phone = randomUser.phone
+        self.title = randomUser.name.title
+        self.gender = randomUser.gender
+        self.age = Int16(randomUser.dob.age)
+        let dateFormatter = ISO8601DateFormatter()
+        if let parsedDate = dateFormatter.date(from: randomUser.dob.date) {
+            self.birthDate = parsedDate
+        }
+    }
+
+    /// Recherche une UserEntity par son UUID dans le contexte donné
+    static func fetch(byUUID uuid: String, in context: NSManagedObjectContext) -> UserEntity? {
+        let fetchRequest: NSFetchRequest<UserEntity> = UserEntity.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "id == %@", uuid)
+        fetchRequest.fetchLimit = 1
+        do {
+            return try context.fetch(fetchRequest).first
+        } catch {
+            return nil
+        }
+    }
+}

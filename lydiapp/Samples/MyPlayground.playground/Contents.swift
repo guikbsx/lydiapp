@@ -1,15 +1,15 @@
-import UIKit
-import CoreData
+import Foundation
 
-print("start")
-
-let context = CoreDataManager.shared.viewContext
-
-_ = UserEntity.samples(in: context)
-
-do {
-    try context.save()
-    print("✅ Users saved to Core Data!")
-} catch {
-    print("❌ Failed to save users: \(error)")
+let service = UserService()
+Task {
+    do {
+        let users = try await service.fetchUsers()
+        for user in users {
+            print(user.description)
+        }
+    } catch let error as RandomUserServiceError {
+        print("Erreur : \(error.errorDescription ?? error.localizedDescription)")
+    } catch {
+        print("Erreur inattendue : \(error.localizedDescription)")
+    }
 }
