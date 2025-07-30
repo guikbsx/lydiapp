@@ -4,8 +4,7 @@ import UIKit
 class UserListViewController: UIViewController {
 
     private let tableView = UITableView(frame: .zero, style: .insetGrouped)
-//    private let refreshControl = UIRefreshControl()
-    let viewModel: UserViewModel
+    private let viewModel: UserViewModel
 
     init(viewModel: UserViewModel = .init()) {
         self.viewModel = viewModel
@@ -50,6 +49,11 @@ class UserListViewController: UIViewController {
         // Refresh control
         tableView.refreshControl = UIRefreshControl()
         tableView.refreshControl?.addTarget(self, action: #selector(refreshUserList(_:)), for: .valueChanged)
+        
+        // Footer spinner
+        let spinner = UIActivityIndicatorView(style: .medium)
+        spinner.hidesWhenStopped = true
+        tableView.tableFooterView = spinner
     }
     
     @objc
@@ -85,6 +89,15 @@ extension UserListViewController: UITableViewDelegate {
         let detailVC = UserDetailViewController(user: selectedUser)
         navigationController?.pushViewController(detailVC, animated: true)
     }
+    
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let offsetY = scrollView.contentOffset.y
+        let contentHeight = scrollView.contentSize.height
+        let frameHeight = scrollView.frame.size.height
+        if offsetY > contentHeight - frameHeight * 1.2 {
+            viewModel.loadMoreUsers()
+        }
+    }
 }
 
 // TO DELETE
@@ -97,8 +110,7 @@ private struct UserListViewControllerPreview: UIViewControllerRepresentable {
 //        viewModel.sample()
         let userListVC = UserListViewController(viewModel: viewModel)
         let navigation = UINavigationController(rootViewController: userListVC)
-        
-        return UINavigationController(rootViewController: userListVC)
+        return navigation
     }
     func updateUIViewController(_ uiViewController: UINavigationController, context: Context) {}
 }
@@ -108,5 +120,3 @@ private struct UserListViewControllerPreview: UIViewControllerRepresentable {
         .ignoresSafeArea()
 }
 #endif
-
-

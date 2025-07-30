@@ -39,6 +39,7 @@ final class UserViewModel {
     }
     
     private var currentPage: Int = 1
+    private var isLoadingMore: Bool = false
     
     var error: ErrorState? = nil
     
@@ -50,6 +51,7 @@ final class UserViewModel {
                 let fetched = try await service.fetchAndSaveUsers(page: 1)
                 self.users = fetched
                 self.currentPage = 1
+                self.isLoadingMore = false
             } catch {
                 handleError(error)
             }
@@ -59,6 +61,10 @@ final class UserViewModel {
     /// Charge la page suivante d’utilisateurs et ajoute au tableau existant.
     /// L'appel est immédiat et la tâche de chargement est gérée en interne.
     func loadMoreUsers() {
+        guard !isLoadingMore else { return }
+        print("--- loading more users")
+        isLoadingMore = true
+        
         let nextPage = currentPage + 1
         usersTask = Task {
             error = nil
@@ -66,8 +72,10 @@ final class UserViewModel {
                 let fetched = try await service.fetchAndSaveUsers(page: nextPage)
                 self.users.append(contentsOf: fetched)
                 self.currentPage = nextPage
+                self.isLoadingMore = false
             } catch {
                 handleError(error)
+                self.isLoadingMore = false
             }
         }
     }
@@ -81,6 +89,7 @@ final class UserViewModel {
                 let fetched = try await service.fetchAndSaveUsers(page: 1)
                 self.users = fetched
                 self.currentPage = 1
+                self.isLoadingMore = false
                 print("--- finish reload users")
             } catch {
                 handleError(error)
