@@ -97,6 +97,8 @@ extension UserEntity {
             self.birthDate = .now
             // TODO: Gestion d'une erreur ici
         }
+        self.thumbnail = randomUser.picture?.medium
 //        self.registredDate = randomUser.registredDate
     }
 }
+

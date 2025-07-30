@@ -3,8 +3,10 @@ import UIKit
 class UserTableViewCell: UITableViewCell {
     static let reuseIdentifier = "UserTableViewCell"
     
+    let avatar = AsyncImageView(frame: .zero)
     let titleLabel = UILabel()
     let detailLabel = UILabel()
+
         
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -17,6 +19,9 @@ class UserTableViewCell: UITableViewCell {
     }
     
     private func setupViews() {
+        avatar.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(avatar)
+
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.font = .preferredFont(forTextStyle: .headline)
         titleLabel.numberOfLines = 1
@@ -29,8 +34,11 @@ class UserTableViewCell: UITableViewCell {
         contentView.addSubview(detailLabel)
         
         NSLayoutConstraint.activate([
+            avatar.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 10),
+            avatar.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+
             titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
-            titleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            titleLabel.leadingAnchor.constraint(equalTo: avatar.trailingAnchor, constant: 16),
             titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             
             detailLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 4),
@@ -41,17 +49,12 @@ class UserTableViewCell: UITableViewCell {
     }
     
     func configure(with user: UserEntity) {
-        let ageString = user.age > 0 ? "(\(user.age))" : ""
-        titleLabel.text = "\(user.title ?? "") \(user.firstName ?? "") \(user.lastName ?? "") \(ageString)"
-        var details = [String]()
-        details.append("Email : \(user.email ?? "inconnu")")
-        details.append("Tél : \(user.phone ?? "inconnu")")
-        details.append("Sexe : \(user.gender ?? "inconnu")")
-        if let birthDate = user.birthDate {
-            let df = DateFormatter()
-            df.dateStyle = .short
-            details.append("Né(e) le : \(df.string(from: birthDate))")
+        titleLabel.text = "\(user.firstName ?? "") \(user.lastName ?? "")"
+        if let email = user.email {
+            detailLabel.text = email
         }
-        detailLabel.text = details.joined(separator: "  •  ")
+        if let urlString = user.thumbnail, let url = URL(string: urlString) {
+            avatar.load(from: url)
+        }
     }
 }
