@@ -34,7 +34,9 @@ final class UserViewModel {
     
     var service: UserService = .init()
     
-    private var usersTask: Task<Void, Never>? = nil
+    var usersTask: Task<Void, Never>? = nil {
+        didSet { oldValue?.cancel() }
+    }
     
     private var currentPage: Int = 1
     
@@ -42,8 +44,6 @@ final class UserViewModel {
     
     /// Charge les utilisateurs aléatoires et met à jour le tableau.
     func loadUsers() {
-        cancelUsersTask()
-        
         usersTask = Task {
             error = nil
             do {
@@ -59,8 +59,6 @@ final class UserViewModel {
     /// Charge la page suivante d’utilisateurs et ajoute au tableau existant.
     /// L'appel est immédiat et la tâche de chargement est gérée en interne.
     func loadMoreUsers() {
-        cancelUsersTask()
-        
         let nextPage = currentPage + 1
         usersTask = Task {
             error = nil
@@ -76,17 +74,18 @@ final class UserViewModel {
     
     /// Recharge la première page d’utilisateurs.
     /// L'appel est immédiat et la tâche de chargement est gérée en interne.
-    func reloadUsers() {
-        cancelUsersTask()
+    func reloadUsers() async {
         usersTask = Task {
             error = nil
             do {
                 let fetched = try await service.fetchAndSaveUsers(page: 1)
                 self.users = fetched
                 self.currentPage = 1
+                print("--- finish reload users")
             } catch {
                 handleError(error)
             }
+            usersTask = nil
         }
     }
     

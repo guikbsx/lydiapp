@@ -4,6 +4,7 @@ import UIKit
 class UserListViewController: UIViewController {
 
     private let tableView = UITableView(frame: .zero, style: .insetGrouped)
+//    private let refreshControl = UIRefreshControl()
     let viewModel: UserViewModel
 
     init(viewModel: UserViewModel = .init()) {
@@ -17,7 +18,7 @@ class UserListViewController: UIViewController {
     
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
-        
+        tableView.refreshControl?.endRefreshing()
         tableView.reloadData()
     }
 
@@ -30,6 +31,7 @@ class UserListViewController: UIViewController {
     }
 
     private func setupTableView() {
+        // Cell
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.register(
             UserTableViewCell.self,
@@ -44,6 +46,15 @@ class UserListViewController: UIViewController {
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
+        
+        // Refresh control
+        tableView.refreshControl = UIRefreshControl()
+        tableView.refreshControl?.addTarget(self, action: #selector(refreshUserList(_:)), for: .valueChanged)
+    }
+    
+    @objc
+    private func refreshUserList(_ sender: UIRefreshControl) {
+        Task { await viewModel.reloadUsers() }
     }
 }
 
@@ -97,3 +108,5 @@ private struct UserListViewControllerPreview: UIViewControllerRepresentable {
         .ignoresSafeArea()
 }
 #endif
+
+
