@@ -24,7 +24,7 @@ class UserListViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.title = "Utilisateurs"
-        view.backgroundColor = .systemBackground
+        navigationController?.navigationBar.prefersLargeTitles = true
         setupTableView()
         viewModel.loadUsers()
     }
