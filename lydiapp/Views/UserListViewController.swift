@@ -2,6 +2,7 @@ import Foundation
 import UIKit
 
 class UserListViewController: UIViewController {
+    let loadingLabel = UILabel()
 
     private let tableView = UITableView(frame: .zero, style: .insetGrouped)
     private let viewModel: UserViewModel
@@ -17,6 +18,9 @@ class UserListViewController: UIViewController {
     
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
+        if !viewModel.users.isEmpty {
+            loadingLabel.removeFromSuperview()
+        }
         tableView.refreshControl?.endRefreshing()
         tableView.reloadData()
     }
@@ -45,6 +49,24 @@ class UserListViewController: UIViewController {
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
+        
+        // Loading Label
+        if viewModel.users.isEmpty {
+            loadingLabel.text = "Chargement en cours..."
+            loadingLabel.font = .preferredFont(forTextStyle: .headline)
+            loadingLabel.textAlignment = .center
+            loadingLabel.textColor = .secondaryLabel
+            loadingLabel.numberOfLines = 0
+            loadingLabel.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview(loadingLabel)
+            NSLayoutConstraint.activate([
+                loadingLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+                loadingLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+                loadingLabel.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor),
+                loadingLabel.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor)
+            ])
+        }
+
         
         // Refresh control
         tableView.refreshControl = UIRefreshControl()
