@@ -1,7 +1,8 @@
 import Foundation
 
 /// Erreurs possibles lors de la récupération d'utilisateurs aléatoires
-enum RandomUserServiceError: Error, LocalizedError {
+enum UserServiceError: Error, LocalizedError, Identifiable {
+
     /// L'URL fournie est invalide.
     case badURL
     /// Le serveur a retourné un code HTTP inattendu (hors 200...299).
@@ -10,6 +11,19 @@ enum RandomUserServiceError: Error, LocalizedError {
     case decoding(Error)
     /// Une erreur inconnue est survenue.
     case unknown(Error)
+    
+    var id: String {
+        switch self {
+        case .badURL:
+            return "badURL"
+        case .badHTTPStatus(let code):
+            return "badHTTPStatus_\(code)"
+        case .decoding(let error):
+            return "decoding_\(error.localizedDescription)"
+        case .unknown(let error):
+            return "unknown_\(error.localizedDescription)"
+        }
+    }
 
     var errorDescription: String? {
         switch self {

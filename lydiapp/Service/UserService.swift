@@ -15,25 +15,25 @@ struct UserService {
      */
     private func fetchUsers(results: Int = 10, page: Int = 1) async throws -> [User] {
         let urlString = "https://randomuser.me/api/?results=\(results)&page=\(page)"
-        guard let url = URL(string: urlString) else { throw RandomUserServiceError.badURL }
+        guard let url = URL(string: urlString) else { throw UserServiceError.badURL }
         do {
             let (data, response) = try await URLSession.shared.data(from: url)
             
             guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
                 let code = (response as? HTTPURLResponse)?.statusCode ?? -1
-                throw RandomUserServiceError.badHTTPStatus(code: code)
+                throw UserServiceError.badHTTPStatus(code: code)
             }
             
             do {
                 let decoded = try JSONDecoder().decode(RandomUserResponse.self, from: data)
                 return decoded.results
             } catch {
-                throw RandomUserServiceError.decoding(error)
+                throw UserServiceError.decoding(error)
             }
-        } catch let error as RandomUserServiceError {
+        } catch let error as UserServiceError {
             throw error
         } catch {
-            throw RandomUserServiceError.unknown(error)
+            throw UserServiceError.unknown(error)
         }
     }
     

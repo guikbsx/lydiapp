@@ -7,7 +7,7 @@ Task {
         for user in users {
             print(user.description)
         }
-    } catch let error as RandomUserServiceError {
+    } catch let error as UserServiceError {
         print("Erreur : \(error.errorDescription ?? error.localizedDescription)")
     } catch {
         print("Erreur inattendue : \(error.localizedDescription)")
