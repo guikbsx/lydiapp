@@ -41,9 +41,16 @@ final class UserViewModel {
     }()
     
     var service: UserService = .init()
+    var sortOption: SortOption = .lastName {
+        didSet {
+            sortUsers(options: sortOption)
+        }
+    }
     
     var usersTask: Task<Void, Never>? = nil {
-        didSet { oldValue?.cancel() }
+        didSet {
+            oldValue?.cancel()
+        }
     }
     
     private var currentPage: Int = 1
@@ -53,7 +60,10 @@ final class UserViewModel {
     
     /// Charge des utilisateurs aléatoires si aucune donnée n'est présente en base et met à jour le tableau.
     func loadUsers() {
-        guard users.isEmpty else { return }
+        guard users.isEmpty else {
+            sortUsers(options: sortOption)
+            return
+        }
         
         usersTask = Task {
             error = nil
@@ -134,6 +144,16 @@ final class UserViewModel {
     
     deinit {
         cancelUsersTask()
+    }
+    
+    private func sortUsers(options: SortOption) {
+        switch options {
+        case .firstName:
+            users.sort { ($0.firstName ?? "") < ($1.firstName ?? "") }
+        case .lastName:
+            users.sort { ($0.lastName ?? "") < ($1.lastName ?? "") }
+        }
+
     }
 }
 

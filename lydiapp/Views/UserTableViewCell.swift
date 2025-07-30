@@ -23,7 +23,6 @@ class UserTableViewCell: UITableViewCell {
         contentView.addSubview(avatar)
 
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        titleLabel.font = .preferredFont(forTextStyle: .headline)
         titleLabel.numberOfLines = 1
         contentView.addSubview(titleLabel)
         
@@ -48,8 +47,20 @@ class UserTableViewCell: UITableViewCell {
         ])
     }
     
-    func configure(with user: UserEntity) {
-        titleLabel.text = "\(user.firstName ?? "") \(user.lastName ?? "")"
+    func configure(with user: UserEntity, highlightFirstName: Bool) {
+        let first = user.firstName ?? ""
+        let last = user.lastName ?? ""
+        
+        let boldFont = UIFont.preferredFont(forTextStyle: .headline)
+        let regularFont = UIFont.preferredFont(forTextStyle: .body)
+
+        let attributed = NSMutableAttributedString()
+        attributed.append(NSAttributedString(string: first, attributes: [.font: highlightFirstName ? boldFont : regularFont]))
+        attributed.append(NSAttributedString(string: " "))
+        attributed.append(NSAttributedString(string: last, attributes: [.font: highlightFirstName ? regularFont : boldFont]))
+
+        titleLabel.attributedText = attributed
+
         if let email = user.email {
             detailLabel.text = email
         }

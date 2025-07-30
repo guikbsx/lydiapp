@@ -76,9 +76,6 @@ extension CoreDataManager {
 
 // MARK: - UserEntity Convenience Initializer
 
-// Ensure RandomUser is visible here
-// import YourModuleContainingRandomUser or define struct RandomUser somewhere accessible
-
 extension UserEntity {
     convenience init(from randomUser: User, context: NSManagedObjectContext) {
         self.init(context: context)

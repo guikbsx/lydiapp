@@ -36,7 +36,11 @@ class UserDetailViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Détail utilisateur"
+        if let firstName = user.firstName, let lastName = user.lastName {
+            title = "\(firstName) \(lastName)"
+        } else {
+            title = "Détail utilisateur"
+        }
         navigationController?.navigationBar.prefersLargeTitles = true
         view.backgroundColor = .systemBackground
         setupTableView()

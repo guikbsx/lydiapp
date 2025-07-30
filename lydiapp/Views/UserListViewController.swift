@@ -1,6 +1,11 @@
 import Foundation
 import UIKit
 
+enum SortOption: String, CaseIterable {
+    case firstName = "Prénom"
+    case lastName = "Nom"
+}
+
 class UserListViewController: UIViewController {
     let loadingLabel = UILabel()
 
@@ -27,8 +32,13 @@ class UserListViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.title = "Utilisateurs"
+        self.title = "Contacts"
         navigationController?.navigationBar.prefersLargeTitles = true
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            image: UIImage(systemName: "line.3.horizontal.decrease"),
+            primaryAction: nil,
+            menu: makeSortMenu()
+        )
         setupTableView()
         viewModel.loadUsers()
     }
@@ -78,6 +88,17 @@ class UserListViewController: UIViewController {
         tableView.tableFooterView = spinner
     }
     
+    private func makeSortMenu() -> UIMenu {
+        let actions = SortOption.allCases.map { option in
+            UIAction(title: option.rawValue, state: option == viewModel.sortOption ? .on : .off) { [weak self] _ in
+                guard let self = self else { return }
+                self.viewModel.sortOption = option
+                self.navigationItem.rightBarButtonItem?.menu = self.makeSortMenu()
+            }
+        }
+        return UIMenu(title: "Trier par", children: actions)
+    }
+    
     @objc
     private func refreshUserList(_ sender: UIRefreshControl) {
         Task { await viewModel.reloadUsers() }
@@ -97,7 +118,7 @@ extension UserListViewController: UITableViewDataSource {
             return UITableViewCell()
         }
         let user = viewModel.users[indexPath.row]
-        cell.configure(with: user)
+        cell.configure(with: user, highlightFirstName: viewModel.sortOption == .firstName)
         return cell
     }
 }
@@ -142,3 +163,25 @@ private struct UserListViewControllerPreview: UIViewControllerRepresentable {
         .ignoresSafeArea()
 }
 #endif
+
+private extension Collection {
+    subscript(safe index: Index) -> Element? {
+        return indices.contains(index) ? self[index] : nil
+    }
+}
+
+// MARK: - UIPickerViewDataSource & UIPickerViewDelegate
+
+extension UserListViewController: UIPickerViewDataSource, UIPickerViewDelegate {
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {
+        return 1
+    }
+
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        return SortOption.allCases.count
+    }
+
+    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+        return SortOption.allCases[safe: row]?.rawValue
+    }
+}
