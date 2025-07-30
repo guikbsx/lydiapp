@@ -36,6 +36,7 @@ class UserListViewController: UIViewController {
             forCellReuseIdentifier: UserTableViewCell.reuseIdentifier
         )
         tableView.dataSource = self
+        tableView.delegate = self
         view.addSubview(tableView)
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: view.topAnchor),
@@ -47,7 +48,9 @@ class UserListViewController: UIViewController {
 }
 
 // MARK: - UITableViewDataSource
+
 extension UserListViewController: UITableViewDataSource {
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         viewModel.users.count
     }
@@ -59,6 +62,17 @@ extension UserListViewController: UITableViewDataSource {
         let user = viewModel.users[indexPath.row]
         cell.configure(with: user)
         return cell
+    }
+}
+
+// MARK: - UITableViewDelegate
+
+extension UserListViewController: UITableViewDelegate {
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let selectedUser = viewModel.users[indexPath.row]
+        let detailVC = UserDetailViewController(user: selectedUser)
+        navigationController?.pushViewController(detailVC, animated: true)
     }
 }
 
