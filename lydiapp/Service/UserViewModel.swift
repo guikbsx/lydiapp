@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import CoreData
 
 @Observable
 final class UserViewModel {
@@ -30,7 +31,14 @@ final class UserViewModel {
         
     }
 
-    private(set) var users: [UserEntity] = []
+    /// The list of users, initially loaded from local storage.
+    private(set) var users: [UserEntity] = {
+        let context = CoreDataManager.shared.viewContext
+        let request = UserEntity.fetchRequest()
+        request.returnsObjectsAsFaults = false
+        guard let users = try? context.fetch(request) else { return [] }
+        return users
+    }()
     
     var service: UserService = .init()
     
@@ -43,8 +51,10 @@ final class UserViewModel {
     
     var error: ErrorState? = nil
     
-    /// Charge les utilisateurs aléatoires et met à jour le tableau.
+    /// Charge des utilisateurs aléatoires si aucune donnée n'est présente en base et met à jour le tableau.
     func loadUsers() {
+        guard users.isEmpty else { return }
+        
         usersTask = Task {
             error = nil
             do {
@@ -54,6 +64,7 @@ final class UserViewModel {
                 self.isLoadingMore = false
             } catch {
                 handleError(error)
+                self.isLoadingMore = false
             }
         }
     }
@@ -93,6 +104,7 @@ final class UserViewModel {
                 print("--- finish reload users")
             } catch {
                 handleError(error)
+                self.isLoadingMore = false
             }
             usersTask = nil
         }
@@ -124,3 +136,4 @@ final class UserViewModel {
         cancelUsersTask()
     }
 }
+
