@@ -17,13 +17,10 @@ class AsyncImageView: UIImageView {
 
     private func setupView() {
         translatesAutoresizingMaskIntoConstraints = false
-        widthAnchor.constraint(equalToConstant: 40).isActive = true
-        heightAnchor.constraint(equalToConstant: 40).isActive = true
         
         backgroundColor = UIColor.systemGray5
         contentMode = .scaleAspectFill
         clipsToBounds = true
-        layer.cornerRadius = 8
     }
 
     /// Charge l'image depuis une URL de manière asynchrone

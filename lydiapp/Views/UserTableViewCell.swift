@@ -6,6 +6,7 @@ class UserTableViewCell: UITableViewCell {
     let avatar = AsyncImageView(frame: .zero)
     let titleLabel = UILabel()
     let detailLabel = UILabel()
+    let chevron = UIImageView(image: UIImage(systemName: "chevron.right"))
 
         
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -21,6 +22,9 @@ class UserTableViewCell: UITableViewCell {
     private func setupViews() {
         avatar.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(avatar)
+        avatar.clipsToBounds = true
+        avatar.contentMode = .scaleAspectFill
+
 
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.numberOfLines = 1
@@ -32,19 +36,37 @@ class UserTableViewCell: UITableViewCell {
         detailLabel.numberOfLines = 0
         contentView.addSubview(detailLabel)
         
+        chevron.translatesAutoresizingMaskIntoConstraints = false
+        chevron.tintColor = .tertiaryLabel
+        chevron.contentMode = .scaleAspectFit
+        contentView.addSubview(chevron)
+        
         NSLayoutConstraint.activate([
-            avatar.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 10),
+            avatar.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             avatar.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            avatar.heightAnchor.constraint(equalToConstant: 60),
+            avatar.widthAnchor.constraint(equalToConstant: 100),
 
             titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
-            titleLabel.leadingAnchor.constraint(equalTo: avatar.trailingAnchor, constant: 16),
-            titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            titleLabel.leadingAnchor.constraint(equalTo: avatar.trailingAnchor, constant: 8),
+            titleLabel.trailingAnchor.constraint(equalTo: chevron.leadingAnchor, constant: -8),
             
             detailLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 4),
             detailLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
-            detailLabel.trailingAnchor.constraint(equalTo: titleLabel.trailingAnchor),
-            detailLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10)
+            detailLabel.trailingAnchor.constraint(equalTo: chevron.leadingAnchor, constant: -8),
+            detailLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10),
+            
+            chevron.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            chevron.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
+            chevron.widthAnchor.constraint(equalToConstant: 16),
+            chevron.heightAnchor.constraint(equalToConstant: 16)
         ])
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        avatar.layer.cornerRadius = avatar.bounds.height / 2
+        avatar.clipsToBounds = true
     }
     
     func configure(with user: UserEntity, highlightFirstName: Bool) {
@@ -69,3 +91,4 @@ class UserTableViewCell: UITableViewCell {
         }
     }
 }
+

@@ -83,7 +83,6 @@ final class UserViewModel {
     /// L'appel est immédiat et la tâche de chargement est gérée en interne.
     func loadMoreUsers() {
         guard !isLoadingMore else { return }
-        print("--- loading more users")
         isLoadingMore = true
         
         let nextPage = currentPage + 1

@@ -1,16 +1,18 @@
 import Foundation
 import UIKit
 
-enum SortOption: String, CaseIterable {
-    case firstName = "Prénom"
-    case lastName = "Nom"
-}
+// MARK: - UserListViewController
 
 class UserListViewController: UIViewController {
+
     let loadingLabel = UILabel()
 
     private let tableView = UITableView(frame: .zero, style: .insetGrouped)
     private let viewModel: UserViewModel
+    
+    private let searchController = UISearchController(searchResultsController: nil)
+    private var filteredUsers: [UserEntity] = []
+    private var isSearchActive: Bool { return searchController.isActive && !(searchController.searchBar.text?.isEmpty ?? true) }
 
     init(viewModel: UserViewModel = .init()) {
         self.viewModel = viewModel
@@ -26,8 +28,27 @@ class UserListViewController: UIViewController {
         if !viewModel.users.isEmpty {
             loadingLabel.removeFromSuperview()
         }
+        handleError()
         tableView.refreshControl?.endRefreshing()
         tableView.reloadData()
+    }
+    
+    private func handleError() {
+        if let error = viewModel.error, presentedViewController == nil {
+            let alert = UIAlertController(
+                title: "Erreur",
+                message: error.errorDescription ?? "Une erreur inconnue est survenue.",
+                preferredStyle: .alert
+            )
+            alert.addAction(
+                UIAlertAction(
+                    title: "OK",
+                    style: .default
+                ) { [weak self] _ in
+                self?.viewModel.error = nil
+                })
+            present(alert, animated: true, completion: nil)
+        }
     }
 
     override func viewDidLoad() {
@@ -39,6 +60,13 @@ class UserListViewController: UIViewController {
             primaryAction: nil,
             menu: makeSortMenu()
         )
+
+        searchController.obscuresBackgroundDuringPresentation = false
+        searchController.searchResultsUpdater = self
+        searchController.searchBar.placeholder = "Contact, mail, téléphone..."
+        navigationItem.searchController = searchController
+        definesPresentationContext = true
+        
         setupTableView()
         viewModel.loadUsers()
     }
@@ -77,7 +105,6 @@ class UserListViewController: UIViewController {
             ])
         }
 
-        
         // Refresh control
         tableView.refreshControl = UIRefreshControl()
         tableView.refreshControl?.addTarget(self, action: #selector(refreshUserList(_:)), for: .valueChanged)
@@ -109,15 +136,19 @@ class UserListViewController: UIViewController {
 
 extension UserListViewController: UITableViewDataSource {
     
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return isSearchActive ? filteredUsers.count : viewModel.users.count
+    }
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        viewModel.users.count
+        1
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: UserTableViewCell.reuseIdentifier, for: indexPath) as? UserTableViewCell else {
             return UITableViewCell()
         }
-        let user = viewModel.users[indexPath.row]
+        let user = isSearchActive ? filteredUsers[indexPath.section] : viewModel.users[indexPath.section]
         cell.configure(with: user, highlightFirstName: viewModel.sortOption == .firstName)
         return cell
     }
@@ -128,7 +159,7 @@ extension UserListViewController: UITableViewDataSource {
 extension UserListViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let selectedUser = viewModel.users[indexPath.row]
+        let selectedUser = (isSearchActive ? filteredUsers : viewModel.users)[indexPath.section]
         let detailVC = UserDetailViewController(user: selectedUser)
         navigationController?.pushViewController(detailVC, animated: true)
     }
@@ -143,7 +174,6 @@ extension UserListViewController: UITableViewDelegate {
     }
 }
 
-// TO DELETE
 #if canImport(SwiftUI)
 import SwiftUI
 
@@ -183,5 +213,24 @@ extension UserListViewController: UIPickerViewDataSource, UIPickerViewDelegate {
 
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
         return SortOption.allCases[safe: row]?.rawValue
+    }
+}
+
+// MARK: - UISearchResultsUpdating
+
+extension UserListViewController: UISearchResultsUpdating {
+    func updateSearchResults(for searchController: UISearchController) {
+        guard let text = searchController.searchBar.text?.lowercased(), !text.isEmpty else {
+            filteredUsers = []
+            tableView.reloadData()
+            return
+        }
+        filteredUsers = viewModel.users.filter { user in
+            (user.firstName?.lowercased().contains(text) ?? false)
+            || (user.lastName?.lowercased().contains(text) ?? false)
+            || (user.email?.lowercased().contains(text) ?? false)
+            || (user.phone?.lowercased().contains(text) ?? false)
+        }
+        tableView.reloadData()
     }
 }
