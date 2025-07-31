@@ -23,7 +23,7 @@ class AsyncImageView: UIImageView {
         clipsToBounds = true
     }
 
-    /// Charge l'image depuis une URL de manière asynchrone
+    /// Charge l'image depuis une URL
     /// - Parameter url: L'URL distante
     /// - Parameter errorImage: Une image à afficher en cas d'erreur
     func load(from url: URL) {
@@ -48,13 +48,6 @@ class AsyncImageView: UIImageView {
             }
         }
     }
-
-//    override func prepareForReuse() {
-//        super.prepareForReuse()
-//        currentTask?.cancel()
-//        image = nil
-//        backgroundColor = .systemGray5
-//    }
 
     private static func defaultErrorImage() -> UIImage? {
         let config = UIImage.SymbolConfiguration(pointSize: 20, weight: .medium)

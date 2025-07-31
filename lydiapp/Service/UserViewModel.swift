@@ -80,7 +80,6 @@ final class UserViewModel {
     }
     
     /// Charge la page suivante d’utilisateurs et ajoute au tableau existant.
-    /// L'appel est immédiat et la tâche de chargement est gérée en interne.
     func loadMoreUsers() {
         guard !isLoadingMore else { return }
         isLoadingMore = true
@@ -101,7 +100,6 @@ final class UserViewModel {
     }
     
     /// Recharge la première page d’utilisateurs.
-    /// L'appel est immédiat et la tâche de chargement est gérée en interne.
     func reloadUsers() async {
         usersTask = Task {
             error = nil

@@ -6,7 +6,6 @@ class UserDetailViewController: UIViewController {
     let user: UserEntity
     private let tableView = UITableView(frame: .zero, style: .insetGrouped)
     
-    // Liste des champs à afficher : (label, closure pour obtenir la valeur)
     private lazy var fields: [UserDetailField] = {
         let dateFormatter = DateFormatter()
         dateFormatter.dateStyle = .medium
@@ -25,6 +24,7 @@ class UserDetailViewController: UIViewController {
     }()
 
     // MARK: - Initialisation
+    
     init(user: UserEntity) {
         self.user = user
         super.init(nibName: nil, bundle: nil)
